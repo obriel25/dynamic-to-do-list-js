@@ -4,8 +4,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const taskInput = document.getElementById('task-input');
     const taskList = document.getElementById('task-list');
 
-    function addTask() {
-        const taskText = taskInput.value.trim();
+    // Load tasks from Local Storage when page loads
+    function loadTasks() {
+        const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+
+        storedTasks.forEach(function (taskText) {
+            addTask(taskText, false);
+        });
+    }
+
+    // Function to add a new task
+    function addTask(taskText = null, save = true) {
+
+        if (taskText === null) {
+            taskText = taskInput.value.trim();
+        }
 
         if (taskText === "") {
             alert("Please enter a task");
@@ -19,21 +32,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
             removeButton.onclick = function () {
                 taskList.removeChild(li);
+
+                // Update Local Storage after removal
+                let storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+                storedTasks = storedTasks.filter(function (task) {
+                    return task !== taskText;
+                });
+                localStorage.setItem('tasks', JSON.stringify(storedTasks));
             };
 
             li.appendChild(removeButton);
             taskList.appendChild(li);
 
+            if (save) {
+                const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+                storedTasks.push(taskText);
+                localStorage.setItem('tasks', JSON.stringify(storedTasks));
+            }
+
             taskInput.value = "";
         }
     }
 
-    addButton.addEventListener('click', addTask);
+    // Add task on button click
+    addButton.addEventListener('click', function () {
+        addTask();
+    });
 
+    // Add task on Enter key
     taskInput.addEventListener('keypress', function (event) {
         if (event.key === 'Enter') {
             addTask();
         }
     });
+
+    // Invoke loading of tasks
+    loadTasks();
 
 });
